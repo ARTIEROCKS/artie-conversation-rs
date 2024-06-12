@@ -24,9 +24,8 @@ impl Chat for ArtieChat {
 }
 
 async fn call_chatgpt_api(message: String) -> Result<String, Box<dyn std::error::Error>> {
-    dotenv::dotenv().ok();
-    let api_key = env::var("API_KEY")?;
 
+    let api_key = env::var("API_KEY")?;
     let client = reqwest::Client::new();
 
     let res = client
