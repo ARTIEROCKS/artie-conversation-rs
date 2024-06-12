@@ -1,6 +1,9 @@
 # Use the official Rust image as the base
 FROM rust:1.71 as builder
 
+# Install protoc (Protocol Buffers compiler)
+RUN apt-get update && apt-get install -y protobuf-compiler
+
 # Set the working directory
 WORKDIR /usr/src/artie-conversation
 
