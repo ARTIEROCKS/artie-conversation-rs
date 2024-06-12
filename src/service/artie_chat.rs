@@ -4,10 +4,10 @@ use crate::pb::chat::{ChatRequest, ChatResponse};
 use std::env;
 
 #[derive(Debug, Default)]
-pub struct MyChat {}
+pub struct ArtieChat {}
 
 #[tonic::async_trait]
-impl Chat for MyChat {
+impl Chat for ArtieChat {
     async fn get_response(
         &self,
         request: Request<ChatRequest>,
@@ -33,7 +33,7 @@ async fn call_chatgpt_api(message: String) -> Result<String, Box<dyn std::error:
         .post("https://api.openai.com/v1/chat/completions")
         .header("Authorization", format!("Bearer {}", api_key))
         .json(&serde_json::json!({
-            "model": "gpt-4",
+            "model": "gpt-3.5-turbo",
             "messages": [{"role": "user", "content": message}]
         }))
         .send()

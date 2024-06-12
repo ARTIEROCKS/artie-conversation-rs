@@ -1,1 +1,1 @@
-pub mod my_chat;
+pub mod artie_chat;
