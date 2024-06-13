@@ -1,4 +1,4 @@
-# Use the official Rust image as the base
+# Use the official Rust image as the base for the builder stage
 FROM rust:1.71 as builder
 
 # Install protoc (Protocol Buffers compiler)
@@ -24,16 +24,19 @@ COPY . .
 # Compile the project
 RUN cargo build --release
 
-# Create a new stage for a lighter image
-FROM debian:buster-slim
+# Create a new stage for a runtime image with necessary libraries
+FROM ubuntu:20.04
 
 # Install necessary dependencies to run the binary
-RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /usr/local/bin
 
-# Copy the compiled binary from the previous stage
+# Copy the compiled binary from the builder stage
 COPY --from=builder /usr/src/artie-conversation/target/release/artie-conversation .
 
 # Expose the port where the gRPC service will be listening
