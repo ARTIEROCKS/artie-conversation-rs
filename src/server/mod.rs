@@ -5,7 +5,7 @@ use crate::pb::chat::chat_server::ChatServer;
 use tokio::signal;
 
 pub async fn start_server() -> Result<(), Box<dyn std::error::Error>> {
-    let addr = "[::1]:50051".parse().unwrap();
+    let addr = "0.0.0.0:50051".parse().unwrap();
     let chat_service = ArtieChat::default();
 
     println!("gRPC server listening on {}", addr);
