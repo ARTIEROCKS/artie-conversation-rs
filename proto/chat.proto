@@ -7,9 +7,13 @@ service Chat {
 }
 
 message ChatRequest {
-  string message = 1;
+  string user_id = 1;
+  string context_id = 2;
+  string message = 3;
 }
 
 message ChatResponse {
-  string reply = 1;
+  string user_id = 1;
+  string context_id = 2;
+  string reply = 3;
 }

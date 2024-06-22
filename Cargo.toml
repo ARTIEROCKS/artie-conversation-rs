@@ -1,9 +1,10 @@
 [package]
 name = "artie-conversation"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [dependencies]
+mongodb = "2.8.2"
 tonic = "0.11.0"
 tonic-reflection = "0.11.0"
 tokio = { version = "1", features = ["full", "signal"] }
@@ -14,6 +15,7 @@ reqwest = { version = "0.12.4", features = ["json"] }
 dotenv = "0.15"
 env_logger = "0.11.3"
 log = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
 
 [build-dependencies]
 tonic-build = "0.11.0"
