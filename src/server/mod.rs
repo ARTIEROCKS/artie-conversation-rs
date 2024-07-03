@@ -21,7 +21,7 @@ pub async fn start_server() -> Result<(), Box<dyn std::error::Error>> {
 
     Server::builder()
         .add_service(ChatServer::new(chat_service))
-        .add_service(reflection_service) // <-- Agrega esta línea
+        .add_service(reflection_service)
         .serve_with_shutdown(addr, shutdown_signal())
         .await?;
 
