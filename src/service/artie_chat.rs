@@ -13,7 +13,6 @@ pub struct ArtieChat {
 }
 
 #[tonic::async_trait]
-#[tonic::async_trait]
 impl Chat for ArtieChat {
     async fn get_response(
         &self,
