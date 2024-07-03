@@ -32,7 +32,6 @@ impl Chat for ArtieChat {
 
                 if let Err(err) = self.update_conversation(&user_id, &context_id, &updated_conversation).await {
                     error!("Error updating conversation in MongoDB: {}", err);
-                    return Err(Status::from(err));
                 }
 
                 response
