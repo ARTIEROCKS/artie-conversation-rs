@@ -30,7 +30,7 @@ impl Chat for ArtieChat {
                 info!("Received response from ChatGPT API: {}", response);
                 updated_conversation.push(("assistant".to_string(), response.clone()));
 
-                if let Err(err) = self.update_conversation(&user_id, &context_id, &updated_conversation).await {
+                if let Err(err) = self.update_conversation(&user_id, &context_id, &updated_conversation, conversation.len() == 0).await {
                     error!("Error updating conversation in MongoDB: {}", err);
                 }
 
@@ -72,7 +72,7 @@ impl ArtieChat {
         }
     }
 
-    async fn update_conversation(&self, user_id: &str, context_id: &str, context: &[(String, String)]) -> Result<(), ArtieError> {
+    async fn update_conversation(&self, user_id: &str, context_id: &str, context: &[(String, String)], create_new: bool) -> Result<(), ArtieError> {
         let collection = self.db.collection::<Document>("conversations");
         let filter = doc! { "user_id": user_id, "context_id": context_id };
 
@@ -85,6 +85,18 @@ impl ArtieChat {
                 }
             })
             .collect();
+
+        if create_new {
+            collection.insert_one(
+                doc! {
+                    "user_id": user_id,
+                    "context_id": context_id,
+                    "context": context_docs,
+                    "last_updated": Bson::DateTime(DateTime::from_millis(Utc::now().timestamp_millis())),
+                }
+            ).await?;
+            return Ok(());
+        }
 
         let update = doc! {
             "$set": {
