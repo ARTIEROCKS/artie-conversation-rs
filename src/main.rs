@@ -1,4 +1,4 @@
-mod pb;
+mod config;
 mod server;
 mod service;
 
