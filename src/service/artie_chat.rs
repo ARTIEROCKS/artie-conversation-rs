@@ -25,7 +25,7 @@ impl Chat for ArtieChat {
         let mut updated_conversation = conversation.clone();
         updated_conversation.push(("user".to_string(), message.clone()));
 
-        let reply = match call_chatgpt_api(message.to_string()).await {
+        let reply = match call_chatgpt_api(&updated_conversation).await {
             Ok(response) => {
                 info!("Received response from ChatGPT API: {}", response);
                 updated_conversation.push(("assistant".to_string(), response.clone()));
@@ -113,16 +113,26 @@ impl ArtieChat {
 }
 
 
-async fn call_chatgpt_api(message: String) -> Result<String, ArtieError> {
+async fn call_chatgpt_api(messages: &Vec<(String, String)>) -> Result<String, ArtieError> {
     let api_key = env::var("API_KEY")?;
     let client = reqwest::Client::new();
+
+    // Format the messages in the required format by the OpenAI API
+    let formatted_messages: Vec<_> = messages.into_iter()
+        .map(|(role, content)| {
+            serde_json::json!({
+                "role": role,
+                "content": content
+            })
+        })
+        .collect();
 
     let res = client
         .post("https://api.openai.com/v1/chat/completions")
         .header("Authorization", format!("Bearer {}", api_key))
         .json(&serde_json::json!({
             "model": "gpt-3.5-turbo",
-            "messages": [{"role": "user", "content": message}]
+            "messages": formatted_messages
         }))
         .send()
         .await?
