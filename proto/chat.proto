@@ -10,6 +10,7 @@ message ChatRequest {
   string user_id = 1;
   string context_id = 2;
   string message = 3;
+  string prompt = 4;
 }
 
 message ChatResponse {
