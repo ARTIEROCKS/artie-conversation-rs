@@ -18,12 +18,18 @@ impl Chat for ArtieChat {
         &self,
         request: Request<ChatRequest>,
     ) -> Result<Response<ChatResponse>, Status> {
-        let ChatRequest { user_id, context_id, message } = request.into_inner();
+        let ChatRequest { user_id, context_id, message, prompt } = request.into_inner();
         info!("Received gRPC request with message: {}", message);
 
         let conversation = self.get_conversation(&user_id, &context_id).await.unwrap_or_default();
         let mut updated_conversation = conversation.clone();
-        updated_conversation.push(("user".to_string(), message.clone()));
+
+        // If the conversation is empty, add the prompt as the first message
+        if updated_conversation.len() == 0 {
+            updated_conversation.push(("user".to_string(), prompt.clone()));
+        }else{
+            updated_conversation.push(("user".to_string(), message.clone()));
+        } 
 
         let reply = match call_chatgpt_api(&updated_conversation).await {
             Ok(response) => {
@@ -114,7 +120,9 @@ impl ArtieChat {
 
 
 async fn call_chatgpt_api(messages: &Vec<(String, String)>) -> Result<String, ArtieError> {
+    
     let api_key = env::var("API_KEY")?;
+    let llm_model = env::var("LLM_MODEL")?;
     let client = reqwest::Client::new();
 
     // Format the messages in the required format by the OpenAI API
@@ -131,7 +139,7 @@ async fn call_chatgpt_api(messages: &Vec<(String, String)>) -> Result<String, Ar
         .post("https://api.openai.com/v1/chat/completions")
         .header("Authorization", format!("Bearer {}", api_key))
         .json(&serde_json::json!({
-            "model": "gpt-3.5-turbo",
+            "model": llm_model,
             "messages": formatted_messages
         }))
         .send()
