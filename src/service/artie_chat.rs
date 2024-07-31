@@ -19,7 +19,7 @@ impl Chat for ArtieChat {
         request: Request<ChatRequest>,
     ) -> Result<Response<ChatResponse>, Status> {
         let ChatRequest { user_id, context_id, message, prompt } = request.into_inner();
-        info!("Received gRPC request with message: {}", message);
+        info!("Received gRPC request with user id: {}, context id: {}, message: {}, prompt: {}", user_id, context_id, message, prompt);
 
         let conversation = self.get_conversation(&user_id, &context_id).await.unwrap_or_default();
         let mut updated_conversation = conversation.clone();
