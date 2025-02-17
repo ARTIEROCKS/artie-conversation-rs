@@ -1,5 +1,5 @@
 # Use the official Rust image as the base for the builder stage
-FROM rust:1.71 as builder
+FROM rust:1.78 AS builder
 
 # Install protoc (Protocol Buffers compiler)
 RUN apt-get update && apt-get install -y protobuf-compiler
@@ -25,7 +25,7 @@ COPY . .
 RUN cargo build --release
 
 # Create a new stage for a runtime image with necessary libraries
-FROM ubuntu:20.04
+FROM ubuntu:24.04
 
 # Install necessary dependencies to run the binary
 RUN apt-get update && apt-get install -y \
