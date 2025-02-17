@@ -18,18 +18,17 @@ impl Chat for ArtieChat {
         &self,
         request: Request<ChatRequest>,
     ) -> Result<Response<ChatResponse>, Status> {
-        let ChatRequest { user_id, context_id, message, prompt } = request.into_inner();
-        info!("Received gRPC request with user id: {}, context id: {}, message: {}, prompt: {}", user_id, context_id, message, prompt);
+        let ChatRequest { user_id, context_id, user_prompt, system_prompt } = request.into_inner();
+        info!("Received gRPC request with user id: {}, context id: {}, user prompt: {}, system prompt: {}", user_id, context_id, user_prompt, system_prompt);
 
         let conversation = self.get_conversation(&user_id, &context_id).await.unwrap_or_default();
         let mut updated_conversation = conversation.clone();
 
-        // If the conversation is empty, add the prompt as the first message
+        // If the conversation is empty, add the system prompt as the first message
         if updated_conversation.len() == 0 {
-            updated_conversation.push(("user".to_string(), prompt.clone()));
-        }else{
-            updated_conversation.push(("user".to_string(), message.clone()));
-        } 
+            updated_conversation.push(("system".to_string(), system_prompt.clone()));
+        }
+        updated_conversation.push(("user".to_string(), user_prompt.clone()));
 
         let reply = match call_chatgpt_api(&updated_conversation).await {
             Ok(response) => {
@@ -139,13 +138,30 @@ async fn call_chatgpt_api(messages: &Vec<(String, String)>) -> Result<String, Ar
         .post("https://api.openai.com/v1/chat/completions")
         .header("Authorization", format!("Bearer {}", api_key))
         .json(&serde_json::json!({
-            "model": llm_model,
-            "messages": formatted_messages
+        "model": llm_model,
+        "messages": formatted_messages,
+        "response_format": {
+                "type": "json_schema",
+                "json_schema":{
+                    "name":"artie_response",
+                    "strict": true,
+                    "schema": {
+                        "type":"object",
+                        "properties": {
+                            "message":{"type":"string"},
+                            "end":{"type":"boolean"}
+                        },
+                        "additionalProperties": false,
+                        "required":["message","end"]
+                    }
+                }
+            },
         }))
         .send()
         .await?
         .json::<serde_json::Value>()
         .await?;
+
 
     let reply = res["choices"][0]["message"]["content"]
         .as_str()
